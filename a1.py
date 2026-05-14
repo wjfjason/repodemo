@@ -1,3 +1,4 @@
-dfasdfasd123
-sdf
 
+import os
+print("hello world")
+print(os.getcwd())
