@@ -115,6 +115,48 @@
             color: #ffd700;
         }
 
+        .speed-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            padding: 8px 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #333;
+            border-radius: 4px;
+        }
+
+        .speed-label {
+            color: #888;
+            font-size: 8px;
+            margin-right: 5px;
+        }
+
+        .speed-btn {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            padding: 6px 12px;
+            background: transparent;
+            color: #666;
+            border: 2px solid #444;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .speed-btn:hover {
+            border-color: #39ff14;
+            color: #39ff14;
+        }
+
+        .speed-btn.active {
+            background: #39ff14;
+            color: #0a0a0a;
+            border-color: #39ff14;
+            box-shadow: 0 0 10px rgba(57, 255, 20, 0.5);
+        }
+
         .canvas-wrapper {
             position: relative;
             border: 3px solid #39ff14;
@@ -307,6 +349,14 @@
             </div>
         </div>
 
+        <div class="speed-control">
+            <span class="speed-label">速度:</span>
+            <button class="speed-btn" data-speed="慢">慢</button>
+            <button class="speed-btn active" data-speed="中">中</button>
+            <button class="speed-btn" data-speed="快">快</button>
+            <button class="speed-btn" data-speed="极速">极速</button>
+        </div>
+
         <div class="canvas-wrapper">
             <canvas id="gameCanvas" width="400" height="400"></canvas>
             
@@ -354,7 +404,13 @@
 
         const GRID_SIZE = 20;
         const CELL_SIZE = canvas.width / GRID_SIZE;
-        const GAME_SPEED = 100;
+
+        const SPEEDS = {
+            '慢': 200,
+            '中': 100,
+            '快': 60,
+            '极速': 30
+        };
 
         const GameState = {
             START: 'start',
@@ -373,6 +429,7 @@
         let gameLoop = null;
         let animationId = null;
         let foodPulse = 0;
+        let currentSpeed = '中';
 
         const currentScoreEl = document.getElementById('currentScore');
         const highScoreEl = document.getElementById('highScore');
@@ -563,7 +620,7 @@
         function gameLoopStep() {
             moveSnake();
             if (gameState === GameState.PLAYING) {
-                gameLoop = setTimeout(gameLoopStep, GAME_SPEED);
+                gameLoop = setTimeout(gameLoopStep, SPEEDS[currentSpeed]);
             }
         }
 
@@ -706,6 +763,24 @@
                 if (gameState === GameState.START || gameState === GameState.GAME_OVER) {
                     startGame();
                 }
+            });
+        });
+
+        function setSpeed(speed) {
+            if (!SPEEDS[speed]) return;
+            currentSpeed = speed;
+            document.querySelectorAll('.speed-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.speed === speed);
+            });
+            if (gameState === GameState.PLAYING) {
+                clearTimeout(gameLoop);
+                gameLoop = setTimeout(gameLoopStep, SPEEDS[currentSpeed]);
+            }
+        }
+
+        document.querySelectorAll('.speed-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                setSpeed(btn.dataset.speed);
             });
         });
 
